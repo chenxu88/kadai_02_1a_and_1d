@@ -1,47 +1,53 @@
 from machine import Pin, I2C
 import time
 
-BH1750_ADDR = 0x23
-BH1750_SDA_PIN = 7
-BH1750_SCL_PIN = 8
-BH1750_FREQ = 100000
+from config import BH1750_CONFIG
 
-CMD_POWER_ON = b'\x01'
-COM_RESET = b'\07'
-COM_HIGH_RES_MODE2 = b'\x11'
 
-i2c = I2C(0, scl=Pin(BH1750_SCL_PIN), sda=Pin(BH1750_SDA_PIN), freq=BH1750_FREQ)
-# print("I2C scan:", [hex(addr) for addr in i2c.scan()])
+class BH1750:
+    I2C_ID = BH1750_CONFIG["i2c_id"]
+    ADDR = BH1750_CONFIG["addr"]
+    SDA_PIN = BH1750_CONFIG["sda_pin"]
+    SCL_PIN = BH1750_CONFIG["scl_pin"]
+    FREQ = BH1750_CONFIG["freq"]
 
-def send_command(cmd):
-    i2c.writeto(BH1750_ADDR, cmd)
+    CMD_POWER_ON = b"\x01"
+    CMD_RESET = b"\x07"
+    CMD_HIGH_RES_MODE = b"\x10"
 
-def initialize():
-    send_command(CMD_POWER_ON)
-    time.sleep(1)
-    send_command(COM_RESET)
-    time.sleep(1)
-    send_command(COM_HIGH_RES_MODE2)
-    time.sleep(1)
-    print("BH1750 Initialize complete")
+    def __init__(self):
+        self.i2c = I2C(self.I2C_ID, scl=Pin(self.SCL_PIN), sda=Pin(self.SDA_PIN), freq=self.FREQ)
+        self.initialized = False
 
-def read_data():
-    data_raw = i2c.readfrom(BH1750_ADDR, 2)
-    # print("Raw data = ", data_raw)
-    data = (data_raw[0] << 8) | data_raw[1]
-    # print("Data = ", data)
-    return data
+    def send_command(self, cmd):
+        self.i2c.writeto(self.ADDR, cmd)
 
-def convert_to_lux(data):
-    lux = data / 1.2
-    return lux
+    def initialize(self):
+        self.send_command(self.CMD_POWER_ON)
+        time.sleep(1)
+        self.send_command(self.CMD_RESET)
+        time.sleep(1)
+        self.send_command(self.CMD_HIGH_RES_MODE)
+        time.sleep(1)
+        self.initialized = True
+        print("BH1750 Initialize complete")
 
-initialize()
-start = time.time()
+    def is_initialized(self):
+        return self.initialized
 
-while True:
-    data = read_data()
-    lux = convert_to_lux(data)
-    end = time.time()
-    print("[{}s]  BH1750: Lux = {:.2f} lx".format(end - start, lux))
-    time.sleep(15)
+    def read_data(self):
+        if not self.initialized:
+            self.initialize()
+
+        data_raw = self.i2c.readfrom(self.ADDR, 2)
+        data = (data_raw[0] << 8) | data_raw[1]
+        return data
+
+    def convert_to_lux(self, data):
+        lux = data / 1.2
+        return lux
+
+    def measure_once(self):
+        data = self.read_data()
+        lux = self.convert_to_lux(data)
+        return lux
