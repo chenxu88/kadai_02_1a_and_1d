@@ -19,16 +19,16 @@ SCD41_CONFIG = {
 
 RPR0521RS_CONFIG = {
     "i2c_id": 0,
-    "sda_pin": 5,
-    "scl_pin": 6,
+    "sda_pin": 3,
+    "scl_pin": 4,
     "freq": COMMON_I2C_FREQ,
     "addr": 0x38,
 }
 
 BH1750_CONFIG = {
     "i2c_id": 0,
-    "sda_pin": 7,
-    "scl_pin": 8,
+    "sda_pin": 3,
+    "scl_pin": 4,
     "freq": COMMON_I2C_FREQ,
     "addr": 0x23,
 }
