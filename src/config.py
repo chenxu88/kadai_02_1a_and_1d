@@ -32,3 +32,14 @@ BH1750_CONFIG = {
     "freq": COMMON_I2C_FREQ,
     "addr": 0x23,
 }
+
+WIFI_CONFIG = {
+    "ssid": "JAISTALL",
+    "password": "",
+}
+
+MQTT_CONFIG = {
+    "host": "150.65.230.59",
+    "port": "1883",
+    "client_id": "mqtt_esp32",
+}
