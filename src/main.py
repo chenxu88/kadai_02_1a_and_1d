@@ -6,18 +6,25 @@ from BH1750 import BH1750
 from connect_wifi import connect_wifi
 from MQTT import MQTT
 from LED import LED
+from time_sync import TimeSync
 
 import time
 
+time.sleep(5)
 connect_wifi()
+time.sleep(3)
 
 dps310 = DPS310()
 rpr0521rs = RPR0521rs()
 scd41 = SCD41()
 bh1750 = BH1750()
 
+timesync = TimeSync()
 mqtt = MQTT()
 client = mqtt.connect_mqtt()
+
+timesync.sync()
+print(f"Time Set as {timesync.now_jst_string()}")
 
 led = LED()
 
@@ -25,7 +32,11 @@ co2_topic = b"i483/actuators/s2610115/co2_threshold/crossed"
 mqtt.client.set_callback(mqtt.on_message)
 mqtt.client.subscribe(co2_topic)
 
+print("starting...")
+time.sleep(5)
+
 def initialize():
+    print("initializing...")
     dps310.initialize()
     rpr0521rs.initialize()
     scd41.initialize()
@@ -42,10 +53,10 @@ while True:
     scd41_co2, scd41_temp, scd41_rh = scd41.measure_once()
     bh1750_lux = bh1750.measure_once()
     
-    end_time = time.time()
-    elapsed_time = end_time - start_time
+    #end_time = time.time()
+    #elapsed_time = end_time - start_time
 
-    print(f"[TIME: {elapsed_time}s]")
+    print(f"[{timesync.now_jst_string()}]")
     print("DPS310: Temperature = {:.1f} C, Pressure = {:.2f} hPa".format(dps310_temp, dps310_pressure))
     print("RPR0521rs: Lux = {:.2f} lx".format(rpr0521rs_lux))
     print("SCD41: CO2: {} ppm, Temperature: {:.2f} C, Relative Humidity: {:.2f} %".format(scd41_co2, scd41_temp, scd41_rh))
