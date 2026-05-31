@@ -5,6 +5,7 @@ from BH1750 import BH1750
 
 from connect_wifi import connect_wifi
 from MQTT import MQTT
+from LED import LED
 
 import time
 
@@ -18,6 +19,12 @@ bh1750 = BH1750()
 mqtt = MQTT()
 client = mqtt.connect_mqtt()
 
+led = LED()
+
+co2_topic = b"i483/actuators/s2610115/co2_threshold/crossed"
+mqtt.client.set_callback(mqtt.on_message)
+mqtt.client.subscribe(co2_topic)
+
 def initialize():
     dps310.initialize()
     rpr0521rs.initialize()
@@ -26,6 +33,8 @@ def initialize():
 
 initialize()
 start_time = time.time()
+
+print()
 
 while True:
     dps310_temp, dps310_pressure = dps310.measure_once()
@@ -50,6 +59,16 @@ while True:
     mqtt.publish_sensor_value("SCD41", "humidity", scd41_rh)
     mqtt.publish_sensor_value("BH1750", "illumination", bh1750_lux)
 
-    time.sleep(15)
-  
+    for _ in range(150):
+        mqtt.check_messages()
+
+        co2_msg = mqtt.last_actuator_message
+
+        if co2_msg == b"yes":
+            led.on()
+        elif co2_msg == b"no":
+            led.off()
+        time.sleep_ms(100)
+    
+    print()
 

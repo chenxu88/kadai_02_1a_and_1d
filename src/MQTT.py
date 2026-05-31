@@ -9,6 +9,7 @@ class MQTT:
 
     def __init__(self):
         self.client = MQTTClient(client_id = self.CLIENT_ID, server = self.HOST, port = self.PORT)
+        self.last_actuator_message = None
 
     def connect_mqtt(self):
         self.client.connect()
@@ -25,6 +26,19 @@ class MQTT:
         topic = self.make_sensor_topic(sensor, data_type)
         payload = self.make_payload(value)
 
-        print("Topic_{}_{} = {}".format(sensor, data_type, topic))
-        print("Payload_{}_{} = {}".format(sensor, data_type, payload))
+        # print("Topic_{}_{} = {}".format(sensor, data_type, topic))
+        # print("Payload_{}_{} = {}".format(sensor, data_type, payload))
         self.client.publish(topic, payload)
+
+    def check_messages(self):
+        self.client.check_msg()
+
+    def on_message(self, topic, msg):
+        print(f"Receive msg from MQTT. Topic: {topic}, Payload: {msg}")
+        #print("topic =", topic)
+        #print("payload =", msg)
+        self.last_actuator_message = msg
+
+    def check_messages(self):
+        self.client.check_msg()
+
