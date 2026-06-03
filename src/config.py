@@ -33,13 +33,30 @@ BH1750_CONFIG = {
     "addr": 0x23,
 }
 
-WIFI_CONFIG = {
-    "ssid": "JAISTALL",
-    "password": "",
-}
+WIFI_CONFIGS = [
+    {
+        "ssid": "JAISTALL",
+        "password": "",
+    }
+]
 
-MQTT_CONFIG = {
-    "host": "150.65.230.59",
-    "port": "1883",
-    "client_id": "mqtt_esp32",
-}
+MQTT_CONFIGS = [
+    {
+        "host": "150.65.230.59",
+        "port": "1883",
+        "client_id": "mqtt_esp32",
+    }
+]
+
+try:
+    from config_local import WIFI_CONFIGS as LOCAL_WIFI_CONFIGS
+    WIFI_CONFIGS = LOCAL_WIFI_CONFIGS + WIFI_CONFIGS
+except ImportError:
+    pass
+
+try:
+    from config_local import MQTT_CONFIGS as LOCAL_MQTT_CONFIGS
+    MQTT_CONFIGS = LOCAL_MQTT_CONFIGS + MQTT_CONFIGS
+except ImportError:
+    pass
+

@@ -11,40 +11,61 @@ from time_sync import TimeSync
 import time
 
 time.sleep(5)
-connect_wifi()
-time.sleep(3)
-
 dps310 = DPS310()
 rpr0521rs = RPR0521rs()
 scd41 = SCD41()
 bh1750 = BH1750()
-
 timesync = TimeSync()
 mqtt = MQTT()
-client = mqtt.connect_mqtt()
-
-timesync.sync()
-print(f"Time Set as {timesync.now_jst_string()}")
-
+#client = mqtt.connect_mqtt()
+timesync = TimeSync()
 led = LED()
 
 co2_topic = b"i483/actuators/s2610115/co2_threshold/crossed"
-mqtt.client.set_callback(mqtt.on_message)
-mqtt.client.subscribe(co2_topic)
 
 print("starting...")
 time.sleep(5)
 
-def initialize():
+def sensors_initialize():
     print("initializing...")
     dps310.initialize()
     rpr0521rs.initialize()
     scd41.initialize()
     bh1750.initialize()
 
-initialize()
-start_time = time.time()
+while True:
+    try:
+        connect_wifi()
+        print("Wi-Fi connected")
+        break
+    except Exception as e:
+        print("Wi-Fi connect failed:", e)
+        print("Wait 15 seconds and retry...")
+        time.sleep(15)
+time.sleep(3)
 
+while True:
+    if timesync.sync():
+        print(f"Time Set as {timesync.now_jst_string()}")
+        break
+
+    print("Time sync failed")
+    print("Wait 15 seconds and retry...")
+    time.sleep(15)
+
+while True:
+    try:
+        client = mqtt.connect_mqtt()
+        mqtt.client.set_callback(mqtt.on_message)
+        mqtt.client.subscribe(co2_topic)
+        print("MQTT connected and subscribed")
+        break
+    except Exception as e:
+        print("MQTT connect failed:", e)
+        print("Wait 15 seconds and retry...")
+        time.sleep(15)
+
+sensors_initialize()
 print()
 
 while True:

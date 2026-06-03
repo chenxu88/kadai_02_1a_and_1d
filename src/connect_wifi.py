@@ -1,10 +1,8 @@
 import network
 import time
 
-from config import WIFI_CONFIG
+from config import WIFI_CONFIGS
 
-ssid = WIFI_CONFIG["ssid"]
-pwd = WIFI_CONFIG["password"]
 
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
@@ -13,15 +11,26 @@ def connect_wifi():
     wlan.active(True)
     time.sleep(1)
 
-    if not wlan.isconnected():
-        print("Connecting Wi-Fi...")
+    for wifi in WIFI_CONFIGS:
+        ssid = wifi["ssid"]
+        pwd = wifi["password"]
+
+        if wlan.isconnected():
+            return wlan
+
+        print("Trying Wi-Fi:", ssid)
         wlan.connect(ssid, pwd)
 
         start_time = time.time()
         while not wlan.isconnected():
-            if time.time() - start_time > 120:
-                raise RuntimeError("Wi-Fi connection timeout")
+            if time.time() - start_time > 20:
+                print("Wi-Fi failed:", ssid)
+                break
             time.sleep(1)
 
-    print("Wi-Fi connected:", wlan.ifconfig())
-    return wlan
+        if wlan.isconnected():
+            print("Wi-Fi connected:", ssid)
+            print("Network config:", wlan.ifconfig())
+            return wlan
+
+    raise RuntimeError("All Wi-Fi connections failed")

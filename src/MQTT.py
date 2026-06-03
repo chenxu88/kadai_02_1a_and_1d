@@ -1,20 +1,33 @@
 from umqtt.robust import MQTTClient
-from config import MQTT_CONFIG
+from config import MQTT_CONFIGS
 import time
 
 class MQTT:
-    HOST = MQTT_CONFIG["host"]
-    PORT = MQTT_CONFIG["port"]
-    CLIENT_ID = MQTT_CONFIG["client_id"]
 
     def __init__(self):
-        self.client = MQTTClient(client_id = self.CLIENT_ID, server = self.HOST, port = self.PORT)
+        self.client = None
         self.last_actuator_message = None
 
     def connect_mqtt(self):
-        self.client.connect()
-        print("MQTT Connected")
-        return self.client
+        for mqtt_cfg in MQTT_CONFIGS:
+            host = mqtt_cfg["host"]
+            port = mqtt_cfg["port"]
+            client_id = mqtt_cfg["client_id"]
+
+            try:
+                print("Trying MQTT:", host, port)
+                self.client = MQTTClient(
+                    client_id=client_id,
+                    server=host,
+                    port=port
+                )
+                self.client.connect()
+                print("MQTT Connected:", host)
+                return self.client
+            except Exception as e:
+                print("MQTT failed:", host, e)
+
+        raise RuntimeError("All MQTT connections failed")
 
     def make_sensor_topic(self, sensor, data_type):
         return "i483/sensors/s2610115/{}/{}".format(sensor, data_type)
