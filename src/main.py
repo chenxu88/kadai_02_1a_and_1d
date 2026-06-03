@@ -21,6 +21,7 @@ mqtt = MQTT()
 timesync = TimeSync()
 led = LED()
 
+blink_enabled = False
 co2_topic = b"i483/actuators/s2610115/co2_threshold/crossed"
 
 print("starting...")
@@ -93,13 +94,15 @@ while True:
 
     for _ in range(150):
         mqtt.check_messages()
-
         co2_msg = mqtt.last_actuator_message
 
-        if co2_msg == b"yes":
-            led.on()
-        elif co2_msg == b"no":
+        if co2_msg == b"yes" and not blink_enabled:
+            led.start_blink()
+            blink_enabled = True
+        elif co2_msg == b"no" and blink_enabled:
             led.off()
+            blink_enabled = False
+
         time.sleep_ms(100)
     
     print()
