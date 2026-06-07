@@ -15,6 +15,11 @@ def connect_wifi():
         ssid = wifi["ssid"]
         pwd = wifi["password"]
 
+        wlan.active(False)
+        time.sleep(1)
+        wlan.active(True)
+        time.sleep(1)
+
         if wlan.isconnected():
             return wlan
 
