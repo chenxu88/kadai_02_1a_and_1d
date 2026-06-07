@@ -71,7 +71,7 @@ print()
 
 while True:
     dps310_temp, dps310_pressure = dps310.measure_once()
-    rpr0521rs_lux = rpr0521rs.measure_once()
+    rpr0521rs_lux, rpr0521rs_ir = rpr0521rs.measure_once()
     scd41_co2, scd41_temp, scd41_rh = scd41.measure_once()
     bh1750_lux = bh1750.measure_once()
     
@@ -79,14 +79,15 @@ while True:
     #elapsed_time = end_time - start_time
 
     print(f"[{timesync.now_jst_string()}]")
-    print("DPS310: Temperature = {:.1f} C, Pressure = {:.2f} hPa".format(dps310_temp, dps310_pressure))
-    print("RPR0521rs: Lux = {:.2f} lx".format(rpr0521rs_lux))
+    print("DPS310: Temperature: {:.1f} C, Pressure: {:.2f} hPa".format(dps310_temp, dps310_pressure))
+    print("RPR0521rs: Lux: {:.2f} lx, Infrared: {:.2f}".format(rpr0521rs_lux, rpr0521rs_ir))
     print("SCD41: CO2: {} ppm, Temperature: {:.2f} C, Relative Humidity: {:.2f} %".format(scd41_co2, scd41_temp, scd41_rh))
-    print("BH1750: Lux = {:.2f} lx".format(bh1750_lux))
+    print("BH1750: Lux: {:.2f} lx".format(bh1750_lux))
     
     mqtt.publish_sensor_value("DPS310", "temperature", dps310_temp)
     mqtt.publish_sensor_value("DPS310", "air_pressure", dps310_pressure)
     mqtt.publish_sensor_value("RPR0521", "illumination", rpr0521rs_lux)
+    mqtt.publish_sensor_value("RPR0521", "infrared_illumination", rpr0521rs_ir)
     mqtt.publish_sensor_value("SCD41", "co2", scd41_co2)
     mqtt.publish_sensor_value("SCD41", "temperature", scd41_temp)
     mqtt.publish_sensor_value("SCD41", "humidity", scd41_rh)

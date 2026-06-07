@@ -72,4 +72,4 @@ class RPR0521rs:
     def measure_once(self):
         data0, data1 = self.read_als()
         lux = self.convert_to_lux(data0, data1)
-        return lux
+        return lux, data1
